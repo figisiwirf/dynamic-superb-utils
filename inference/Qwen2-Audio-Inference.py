@@ -56,7 +56,7 @@ def get_pretrained_model(model_name='Qwen/Qwen2-Audio-7B-Instruct'):
         model_name: The model name to load. Defaults to 'Qwen/Qwen2-Audio-7B-Instruct'.
 
     Returns:
-        tuple[AutoModelForCausalLM, AutoTokenizer]: The pre-trained model and tokenizer.
+        tuple[Qwen2AudioForConditionalGeneration, AutoProcessor]: The pre-trained model and precessor.
     """
 
     model = Qwen2AudioForConditionalGeneration.from_pretrained("Qwen/Qwen2-Audio-7B-Instruct", device_map="auto").eval()
@@ -97,7 +97,7 @@ def create_query(processor, wavs, texts):
         texts (List[str]): A list of text prompts.
 
     Returns:
-        query (dict): A query for QWen model. The query is a dict with two keys, 'audio' and 'text'.
+        tuple[str, List[np.array]]: returns the text and audio inputs for pre-trained model.
     """
     wavs_query = [
         {'type': 'audio', 'audio_url': str(p_wav)} for p_wav in wavs if os.path.exists(p_wav)
@@ -170,49 +170,6 @@ def main():
         json.dump(metadata, savefile.open('w'), indent=4, ensure_ascii=False)
         print('Done {}'.format(taskname))
 
-
-    # for p_result in tqdm(args.p_results.glob('Qwen-Audio-Chat/*.json')):
-    #     result = json.load(p_result.open('r'))
-    #     metadata = json.load((args.p_dataset / p_result.stem / 'metadata.json').open('r'))
-        
-    #     new_result = {}
-    #     for k, v in metadata.items():
-    #         if k in result:
-    #             new_result[k] = result[k]
-    #             continue
-            
-    #         p_wav1 = args.p_dataset / p_result.stem / v['file']
-    #         p_wav2 = args.p_dataset / p_result.stem / v['file2'] if 'file2' in v else None
-            
-    #         if p_wav2 is None:
-    #             query = tokenizer.from_list_format([
-    #                 {'audio': str(p_wav1)}, # Either a local path or an url
-    #                 {'text': metadata['instruction']},
-    #             ])
-    #             response, history = model.chat(tokenizer, query=query, history=None)
-    #             new_result[k] = {
-    #                 "instruction": metadata['instruction'],
-    #                 "response": response,
-    #                 "model": "Qwen-Audio-Chat",
-    #                 "label": metadata['label']
-    #             }
-    #         else:
-    #             query = tokenizer.from_list_format([
-    #                 {'audio': str(p_wav1)}, # Either a local path or an url
-    #                 {'audio': str(p_wav2)},
-    #                 {'text': metadata['instruction']},
-    #             ])
-    #             response, history = model.chat(tokenizer, query=query, history=None)
-    #             new_result[k] = {
-    #                 "instruction": metadata['instruction'],
-    #                 "response": response,
-    #                 "model": "Qwen-Audio-Chat",
-    #                 "label": metadata['label']
-    #             }
-
-    #     p_save_result = args.p_save / p_result.relative_to(args.p_results)
-    #     p_save_result.parent.mkdir(parents=True, exist_ok=True)
-    #     json.dump(new_result, p_save_result.open('w'), indent=4)
 
 if __name__ == '__main__':
     main()
